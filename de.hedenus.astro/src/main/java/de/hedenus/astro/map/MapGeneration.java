@@ -15,17 +15,17 @@ import de.hedenus.astro.common.Log;
 
 public class MapGeneration
 {
-	private final int dim = 1800;
+	private final int dim = 2000;
 	private final float starScale = 2.0f;
 
 	private final Dimension size = new Dimension(dim, dim / 2);
 	private final StarMap map = new StarMap(size, 10);
 	private final Graphics2D g2d = map.graphics2d();
 	private final MapProjection mapProjection = new MapProjection(size);
-	private final StarCatalogue starCatalogue = new StarCatalogue();;
+	private final StarCatalogue starCatalogue = new StarCatalogue();
 	private final ConstellationLines constellationLines = new ConstellationLines(starCatalogue);
 
-	public MapGeneration generate()
+	public MapGeneration draw()
 	{
 		drawRaster();
 		drawBoundaries();
@@ -35,6 +35,16 @@ public class MapGeneration
 		return this;
 	}
 
+	public void animate()
+	{
+		for (int a = 0; a < 360; a++)
+		{
+			mapProjection.rotation(a);
+			draw();
+			save("animation_" + a + ".png");
+		}
+	}
+
 	public MapGeneration drawRaster()
 	{
 		g2d.setColor(Color.white);
@@ -42,7 +52,7 @@ public class MapGeneration
 		g2d.setColor(Color.lightGray);
 
 		int x2 = size.width / 2;
-		//	g2d.drawLine(x2, 0, x2, size.height);
+		g2d.drawLine(x2, 0, x2, size.height);
 		int d = 15;
 		for (int i = d; i <= 180; i += d)
 		{
@@ -69,10 +79,11 @@ public class MapGeneration
 		int lineSkipped = 0;
 
 		List<Constellation> constellationList = List.of(Constellation.values());
-		//	List<Constellation> constellationList = List.of(Constellation.UMi);
+		//List<Constellation> constellationList = List.of(Constellation.Cha);
 
 		for (Constellation constellation : constellationList)
 		{
+
 			ConstellationBoundaries constellationBoundaries = ConstellationBoundaries.boundaries(constellation);
 
 			for (SphericalLine sphericalLine : constellationBoundaries.lines())

@@ -14,6 +14,7 @@ public class MapProjection
 {
 	private final double w;
 	private final double h;
+	private double alpha = 0.0;
 
 	public MapProjection(final Dimension size)
 	{
@@ -23,7 +24,7 @@ public class MapProjection
 
 	public Point project(final SphericalCoordinates x)
 	{
-		Angle ra = rot(x.x());
+		Angle ra = rotate(x.x());
 		Angle dec = x.y();
 
 		return mollweide(ra, dec);
@@ -45,14 +46,21 @@ public class MapProjection
 		return new Point(px, py);
 	}
 
-	private Angle rot(final Angle ra)
+	public void rotation(final double alpha)
 	{
-		Angle ra2 = new DecimalDegree(Angle.fold360(360.0 - (ra.deg() + 180.0))); // Frühlingspunkt in die Mitte, RA von Ost nach Wast
+		this.alpha = alpha;
+	}
+
+	private Angle rotate(final Angle ra)
+	{
+		Angle ra2 = new DecimalDegree(Angle.fold360(360.0 - (ra.deg() + 180.0 + alpha))); // Frühlingspunkt in die Mitte, RA von Ost nach Wast
 		return ra2;
 	}
 
 	private double theta(final double phi)
 	{
+		double eps = 2 * Math.PI / w / 10.0;
+
 		double t = phi;
 		double dt;
 		do
@@ -60,7 +68,7 @@ public class MapProjection
 			dt = -((2.0 * t + Math.sin(2.0 * t) - Math.PI * Math.sin(phi)) / (4 * Math.cos(t) * Math.cos(t))); // (2.0 + 2.0 * Math.cos(2.0 * t)
 			t = t + dt;
 		}
-		while (Math.abs(dt) > 0.000001);
+		while (Math.abs(dt) > eps);
 		return t;
 	}
 
@@ -82,7 +90,7 @@ public class MapProjection
 		Point p1 = mollweide(line.x1().x(), line.x1().y());
 
 		int dy = Math.abs(p1.y - p0.y);
-		int intpolStep = 8;
+		int intpolStep = 4;
 		if (dy > intpolStep)
 		{
 			double dra = line.x1().x().deg() - line.x0().x().deg();
@@ -113,21 +121,22 @@ public class MapProjection
 		SphericalCoordinates x0 = line.x0();
 		SphericalCoordinates x1 = line.x1();
 
-		Angle ra0 = rot(x0.x());
-		Angle ra1 = rot(x1.x());
+		Angle ra0 = rotate(x0.x());
+		Angle ra1 = rotate(x1.x());
+		double delta = Math.abs(ra1.deg() - ra0.deg());
 
 		SphericalCoordinates p0 = new SphericalCoordinates(ra0, x0.y());
 		SphericalCoordinates p1 = new SphericalCoordinates(ra1, x1.y());
 
-		double eps = 20.0;
+		double eps = 90;
 
-		if ((ra0.deg() < eps) && (ra1.deg() > (360.0 - eps)))
+		if (delta > 180.0 && (ra0.deg() < eps) && (ra1.deg() > (360.0 - eps)))
 		{
 			SphericalCoordinates c1 = new SphericalCoordinates(new DecimalDegree(ra1.deg() - 360.0), x1.y());
 			SphericalCoordinates c0 = new SphericalCoordinates(new DecimalDegree(ra0.deg() + 360.0), x0.y());
 			result = List.of(new SphericalLine(p0, c1), new SphericalLine(p1, c0));
 		}
-		else if ((ra1.deg() < eps) && (ra0.deg() > (360.0 - eps)))
+		else if (delta > 180.0 && (ra1.deg() < eps) && (ra0.deg() > (360.0 - eps)))
 		{
 			SphericalCoordinates c1 = new SphericalCoordinates(new DecimalDegree(ra1.deg() + 360.0), x1.y());
 			SphericalCoordinates c0 = new SphericalCoordinates(new DecimalDegree(ra0.deg() - 360.0), x0.y());

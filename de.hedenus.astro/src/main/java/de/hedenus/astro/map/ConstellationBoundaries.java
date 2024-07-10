@@ -1,6 +1,10 @@
 package de.hedenus.astro.map;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,7 +12,11 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import de.hedenus.astro.AstroException;
 import de.hedenus.astro.Constellation;
@@ -22,11 +30,18 @@ public class ConstellationBoundaries implements Serializable
 {
 	private static final long serialVersionUID = 3960679160825662652L;
 
+	private static Map<Constellation, ConstellationBoundaries> constellationBoundaries = new HashMap<Constellation, ConstellationBoundaries>();
+
 	public static ConstellationBoundaries boundaries(final Constellation constellation)
 	{
-		ConstellationBoundaries constellationBoundaries = FileCache.instance().get(constellation.name(),
-				() -> new ConstellationBoundaries(constellation).download());
-		return constellationBoundaries;
+		ConstellationBoundaries result = constellationBoundaries.get(constellation);
+		if (result == null)
+		{
+			result = FileCache.instance().get(constellation.name(),
+					() -> new ConstellationBoundaries(constellation).download());
+			constellationBoundaries.put(constellation, result);
+		}
+		return result;
 	}
 
 	private final Constellation constellation;
@@ -92,5 +107,39 @@ public class ConstellationBoundaries implements Serializable
 		return URI.create(
 				"https://www.iau.org/static/public/constellations/txt/" + constellation.name().toLowerCase() + ".txt")
 				.toURL();
+	}
+
+	public void sketch()
+	{
+		int w = 720;
+		int h = 360;
+
+		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics2d = bi.createGraphics();
+		graphics2d.setColor(Color.white);
+		graphics2d.fillRect(0, 0, w, h);
+		graphics2d.setColor(Color.red);
+
+		for (SphericalLine line : lines())
+		{
+			int x0 = 720 - 2 * (int) line.x0().x().deg();
+			int y0 = 180 - 2 * (int) line.x0().y().deg();
+
+			int x1 = 720 - 2 * (int) line.x1().x().deg();
+			int y1 = 180 - 2 * (int) line.x1().y().deg();
+
+			graphics2d.drawLine(x0, y0, x1, y1);
+			graphics2d.fillOval(x0 - 2, y0 - 2, 4, 4);
+			graphics2d.fillOval(x1 - 2, y1 - 2, 4, 4);
+		}
+
+		try
+		{
+			ImageIO.write(bi, "PNG", new File("target", constellation.name() + ".png"));
+		}
+		catch (IOException ex)
+		{
+			throw new AstroException(ex);
+		}
 	}
 }
