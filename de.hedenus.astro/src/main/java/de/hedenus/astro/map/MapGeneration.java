@@ -1,5 +1,6 @@
 package de.hedenus.astro.map;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -11,27 +12,55 @@ import java.util.List;
 import java.util.Set;
 
 import de.hedenus.astro.Constellation;
+import de.hedenus.astro.common.FileCache;
 import de.hedenus.astro.common.Log;
 
 public class MapGeneration
 {
-	private final int dim = 2000;
-	private final float starScale = 2.0f;
+	public static void main(final String[] args)
+	{
+		long t0 = System.currentTimeMillis();
 
-	private final Dimension size = new Dimension(dim, dim / 2);
-	private final StarMap map = new StarMap(size, 10);
-	private final Graphics2D g2d = map.graphics2d();
-	private final MapProjection mapProjection = new MapProjection(size);
-	private final StarCatalogue starCatalogue = new StarCatalogue();
-	private final ConstellationLines constellationLines = new ConstellationLines(starCatalogue);
+		new MapGeneration(10000).draw().save();
+
+		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
+	}
+
+	private final int dim;
+	private final Dimension size;
+	private final float starScale;
+	private final float rasterLineWidth;
+	private final float constellationLineWidth;
+	private final StarMap map;
+	private final Graphics2D g2d;
+	private final MapProjection mapProjection;
+	private final StarCatalogue starCatalogue;
+	private final ConstellationLines constellationLines;
+
+	public MapGeneration(final int dim)
+	{
+		this.dim = dim;
+		this.size = new Dimension(dim, dim / 2);
+		this.starScale = dim / 3000.0f;
+		this.rasterLineWidth = dim / 5000.0f;
+		this.constellationLineWidth = dim / 4000.0f;
+
+		this.map = new StarMap(size, 10);
+		this.g2d = map.graphics2d();
+		this.mapProjection = new MapProjection(size);
+
+		this.starCatalogue = new StarCatalogue();
+		this.constellationLines = FileCache.instance().get("constellationLines",
+				() -> new ConstellationLines().compute(starCatalogue));
+	}
 
 	public MapGeneration draw()
 	{
 		drawRaster();
 		drawBoundaries();
 
-		//	drawConstellationLines();
-		//	drawStars();
+		drawConstellationLines();
+		drawStars();
 		return this;
 	}
 
@@ -41,7 +70,7 @@ public class MapGeneration
 		{
 			mapProjection.rotation(a);
 			draw();
-			save("animation_" + a + ".png");
+			//save("anim/animation_" + a + ".png");
 		}
 	}
 
@@ -50,6 +79,7 @@ public class MapGeneration
 		g2d.setColor(Color.white);
 		g2d.fill(new Ellipse2D.Double(0, 0, size.width, size.height));
 		g2d.setColor(Color.lightGray);
+		g2d.setStroke(new BasicStroke(rasterLineWidth));
 
 		int x2 = size.width / 2;
 		g2d.drawLine(x2, 0, x2, size.height);
@@ -72,18 +102,14 @@ public class MapGeneration
 
 	public MapGeneration drawBoundaries()
 	{
-		g2d.setColor(Color.black);
+		g2d.setColor(Color.darkGray);
+		g2d.setStroke(new BasicStroke(rasterLineWidth));
 
 		Set<SphericalLine> linesDuplicateFilter = new HashSet<>();
-		int linesDrawn = 0;
-		int lineSkipped = 0;
 
 		List<Constellation> constellationList = List.of(Constellation.values());
-		//List<Constellation> constellationList = List.of(Constellation.Cha);
-
 		for (Constellation constellation : constellationList)
 		{
-
 			ConstellationBoundaries constellationBoundaries = ConstellationBoundaries.boundaries(constellation);
 
 			for (SphericalLine sphericalLine : constellationBoundaries.lines())
@@ -95,16 +121,32 @@ public class MapGeneration
 					{
 						g2d.drawLine(line2D.p0.x, line2D.p0.y, line2D.p1.x, line2D.p1.y);
 					}
-					linesDrawn++;
 				}
-				else
-				{
-					lineSkipped++;
-				}
-
 			}
 		}
-		Log.info("Lines drawn: " + linesDrawn + ", skipped:" + lineSkipped);
+		return this;
+	}
+
+	public MapGeneration drawConstellationLines()
+	{
+		g2d.setColor(Color.blue);
+		g2d.setStroke(new BasicStroke(constellationLineWidth));
+
+		for (Constellation constellation : Constellation.values())
+		{
+			List<SphericalLine> sphericalLines = constellationLines.lines(constellation);
+			if (sphericalLines != null)
+			{
+				for (SphericalLine sphericalLine : sphericalLines)
+				{
+					List<Line2D> line2Ds = mapProjection.project(sphericalLine);
+					for (Line2D line2D : line2Ds)
+					{
+						g2d.drawLine(line2D.p0.x, line2D.p0.y, line2D.p1.x, line2D.p1.y);
+					}
+				}
+			}
+		}
 		return this;
 	}
 
@@ -130,31 +172,9 @@ public class MapGeneration
 		return this;
 	}
 
-	public MapGeneration drawConstellationLines()
+	public MapGeneration save()
 	{
-		g2d.setColor(Color.green);
-
-		for (Constellation constellation : Constellation.values())
-		{
-			List<SphericalLine> sphericalLines = constellationLines.lines(constellation);
-			if (sphericalLines != null)
-			{
-				for (SphericalLine sphericalLine : sphericalLines)
-				{
-					List<Line2D> line2Ds = mapProjection.project(sphericalLine);
-					for (Line2D line2D : line2Ds)
-					{
-						g2d.drawLine(line2D.p0.x, line2D.p0.y, line2D.p1.x, line2D.p1.y);
-					}
-				}
-			}
-		}
-		return this;
-	}
-
-	public MapGeneration save(final String fileName)
-	{
-		map.save(new File("target", fileName));
+		map.save(new File("target", "starMap_" + dim + ".png"));
 		return this;
 	}
 }

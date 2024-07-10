@@ -1,7 +1,6 @@
 package de.hedenus.astro.map;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
@@ -17,18 +16,18 @@ public class ConstellationLines implements Serializable
 {
 	private static final long serialVersionUID = 1780615707853865283L;
 
-	private final StarCatalogue starCatalogue;
 	private final Map<Constellation, List<SphericalLine>> lines = new HashMap<>();
 
-	public ConstellationLines(final StarCatalogue starCatalogue)
+	public List<SphericalLine> lines(final Constellation constellation)
 	{
-		this.starCatalogue = starCatalogue;
-		load();
+		return lines.get(constellation);
 	}
 
-	private void load()
+	public ConstellationLines compute(final StarCatalogue starCatalogue)
 	{
-		try (InputStream inputStream = getClass().getResourceAsStream("/bsc/ConstellationLines.dat"))
+		Map<Integer, Integer> hip2hr = new HashMap<Integer, Integer>();
+
+		try (InputStream inputStream = getClass().getResourceAsStream("/stellarium/cross-id.dat"))
 		{
 			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -39,30 +38,61 @@ public class ConstellationLines implements Serializable
 				{
 					String[] tokens = s.split("\\s+");
 
-					Constellation constellation = Constellation.valueOf(tokens[0]);
-					List<SphericalLine> segment = new ArrayList<>();
-
-					int count = Integer.parseInt(tokens[1]);
-					for (int i = 0; i < count - 1; i++)
-					{
-						int nr0 = Integer.parseInt(tokens[2 + i + 0]);
-						int nr1 = Integer.parseInt(tokens[2 + i + 1]);
-						segment.add(new SphericalLine(starCatalogue.entry(nr0).coordinates(),
-								starCatalogue.entry(nr1).coordinates()));
-					}
-
-					lines.put(constellation, segment);
+					Integer hip = Integer.valueOf(tokens[0]);
+					Integer hr = Integer.valueOf(tokens[tokens.length - 1]);
+					hip2hr.put(hip, hr);
 				}
 			}
 		}
-		catch (IOException ex)
+		catch (Exception ex)
 		{
 			throw new AstroException(ex);
 		}
-	}
 
-	public List<SphericalLine> lines(final Constellation constellation)
-	{
-		return lines.get(constellation);
+		try (InputStream inputStream = getClass().getResourceAsStream("/stellarium/constellationship.fab"))
+		{
+			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+			for (String line = null; (line = br.readLine()) != null;)
+			{
+				String s = line.trim();
+				if (!(s.isEmpty() || s.startsWith("#")))
+				{
+					String[] tokens = s.split("\\s+");
+
+					String con = tokens[0];
+					Constellation constellation = "Ser".equals(con) ? Constellation.Ser1 : Constellation.valueOf(con);
+					List<SphericalLine> linesOfConstellation = new ArrayList<SphericalLine>();
+
+					int lineCount = Integer.parseInt(tokens[1]);
+					for (int i = 0; i < lineCount; i++)
+					{
+						int hip1 = Integer.parseInt(tokens[2 + 2 * i + 0]);
+						int hip2 = Integer.parseInt(tokens[2 + 2 * i + 1]);
+
+						Integer hr1 = hip2hr.get(hip1);
+						Integer hr2 = hip2hr.get(hip2);
+
+						if (hr1 == null || hr2 == null)
+						{
+							System.err.println(con + " " + hip1 + "->" + hr1 + " " + hip2 + "->" + hr2);
+						}
+						else
+						{
+							linesOfConstellation.add(new SphericalLine(starCatalogue.entry(hr1).coordinates(),
+									starCatalogue.entry(hr2).coordinates()));
+						}
+					}
+
+					this.lines.put(constellation, linesOfConstellation);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new AstroException(ex);
+		}
+
+		return this;
 	}
 }

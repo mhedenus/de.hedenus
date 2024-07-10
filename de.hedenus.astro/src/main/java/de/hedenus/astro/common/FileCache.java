@@ -47,7 +47,6 @@ public class FileCache
 			{
 				throw new AstroException(ex);
 			}
-			Log.info("Found in cache: " + fileName);
 		}
 		else
 		{
