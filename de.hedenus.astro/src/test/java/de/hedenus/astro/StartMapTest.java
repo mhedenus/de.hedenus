@@ -1,25 +1,24 @@
 package de.hedenus.astro;
 
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 
-import de.hedenus.astro.map.ConstellationBoundaries;
-import de.hedenus.astro.map.MapGeneration;
+import de.hedenus.astro.map.StarCatalogue;
 
 public class StartMapTest
 {
 
 	@Test
-	public void test3()
-	{
-		for (Constellation c : Constellation.values())
-		{
-			ConstellationBoundaries.boundaries(c).sketch();
-		}
-	}
-
-	@Test
 	public void test4()
 	{
-		new MapGeneration(1000).animate();
+		//	ConstellationBoundaries.constellationBoundaries(Constellation.Oct).sketch();
+
+		StarCatalogue starCatalogue = new StarCatalogue();
+
+		System.out.println(starCatalogue.entries().stream().filter(e -> e.isStar()).map(e -> e.name())
+				.collect(Collectors.toCollection(() -> new TreeSet<>())));
+
 	}
 }

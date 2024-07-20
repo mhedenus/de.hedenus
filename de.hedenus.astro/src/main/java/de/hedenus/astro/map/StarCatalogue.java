@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import de.hedenus.astro.AstroException;
 import de.hedenus.astro.geom.Declination;
@@ -22,15 +23,23 @@ public class StarCatalogue implements Serializable
 		private static final long serialVersionUID = 2876671165655900332L;
 
 		private final Integer nr;
-		private final String name;
+		private final String flamsteedDesignation;
+		private final String bayerDesignation;
+		private final String properName;
 		private final EquatorialCoordinates coordinates;
 		private final Float apparentMagnitude;
 
-		public Entry(final Integer nr, final String name, final EquatorialCoordinates coordinates,
+		public Entry(final Integer nr, //
+				final String flamsteedDesignation, //
+				final String bayerDesignation, //
+				final String properName, //
+				final EquatorialCoordinates coordinates, //
 				final Float apparentMagnitude)
 		{
 			this.nr = nr;
-			this.name = name;
+			this.flamsteedDesignation = flamsteedDesignation;
+			this.bayerDesignation = bayerDesignation;
+			this.properName = properName;
 			this.coordinates = coordinates;
 			this.apparentMagnitude = apparentMagnitude;
 		}
@@ -38,7 +47,22 @@ public class StarCatalogue implements Serializable
 		@Override
 		public String toString()
 		{
-			return nr + "|" + name + "|" + coordinates + "|" + apparentMagnitude;
+			return nr + "|" + name() + "|" + coordinates + "|" + apparentMagnitude;
+		}
+
+		public String flamsteedDesignation()
+		{
+			return flamsteedDesignation;
+		}
+
+		public String bayerDesignation()
+		{
+			return bayerDesignation;
+		}
+
+		public String properName()
+		{
+			return properName;
 		}
 
 		public boolean isStar()
@@ -54,6 +78,24 @@ public class StarCatalogue implements Serializable
 		public Float apparentMagnitude()
 		{
 			return apparentMagnitude;
+		}
+
+		public String name()
+		{
+			String result = properName;
+			if (result == null)
+			{
+				result = bayerDesignation;
+			}
+			if (result == null)
+			{
+				result = flamsteedDesignation;
+			}
+			if (result == null)
+			{
+				result = "HR" + nr;
+			}
+			return result;
 		}
 	}
 
@@ -75,6 +117,10 @@ public class StarCatalogue implements Serializable
 				String s = line.trim();
 				if (!s.isEmpty())
 				{
+					String flamsteedDesignation = null;
+					String bayerDesignation = null;
+					String properName = null;
+
 					Integer nr = Integer.parseInt(line.substring(0, 4).trim());
 					String name = line.substring(4, 14);
 					EquatorialCoordinates coords = null;
@@ -87,6 +133,23 @@ public class StarCatalogue implements Serializable
 							nr.equals(3515) || //
 							nr.equals(3671))) //
 					{
+						String flnr = name.substring(0, 3).trim();
+						String bynr = name.substring(3, 6).trim();
+						String byi = name.substring(6, 7).trim();
+
+						if (flnr.length() > 0)
+						{
+							flamsteedDesignation = flnr;
+						}
+						if (bynr.length() > 0)
+						{
+							bayerDesignation = toGreek(bynr);
+							if (byi.length() > 0)
+							{
+								bayerDesignation += toSuperScript(byi);
+							}
+						}
+
 						String ra_h = line.substring(75, 77);
 						String ra_m = line.substring(77, 79);
 						String ra_s = line.substring(79, 83);
@@ -108,7 +171,7 @@ public class StarCatalogue implements Serializable
 						magnitude = Float.valueOf(vmag.trim());
 					}
 
-					Entry entry = new Entry(nr, name, coords, magnitude);
+					Entry entry = new Entry(nr, flamsteedDesignation, bayerDesignation, properName, coords, magnitude);
 					entries.add(entry);
 				}
 			}
@@ -127,5 +190,61 @@ public class StarCatalogue implements Serializable
 	public Entry entry(final Integer nr)
 	{
 		return entries.get(nr.intValue() - 1);
+	}
+
+	public Stream<Entry> stars(final float magnitude)
+	{
+		return entries.stream().filter(Entry::isStar).filter(s -> s.apparentMagnitude() <= magnitude);
+	}
+
+	public static String toGreek(final String s)
+	{
+		return switch (s)
+		{
+			case "Alp" -> "\u03b1"; //
+			case "Bet" -> "\u03b2"; //
+			case "Gam" -> "\u03b3"; //
+			case "Del" -> "\u03b4"; //
+			case "Eps" -> "\u03b5"; //
+			case "Zet" -> "\u03b6"; //
+			case "Eta" -> "\u03b7"; //
+			case "The" -> "\u03b8"; //
+			case "Iot" -> "\u03b9"; //
+			case "Kap" -> "\u03ba"; //
+			case "Lam" -> "\u03bb"; //
+			case "Mu" -> "\u03bc"; //
+			case "Nu" -> "\u03bd"; //
+			case "Xi" -> "\u03be"; //
+			case "Omi" -> "\u03bf"; //
+			case "Pi" -> "\u03c0"; //
+			case "Rho" -> "\u03c1"; //
+			case "Sig" -> "\u03c3"; // c2 == Abschluss-Sigma
+			case "Tau" -> "\u03c4"; //
+			case "Ups" -> "\u03c5"; //
+			case "Phi" -> "\u03c6"; //
+			case "Chi" -> "\u03c7"; //
+			case "Psi" -> "\u03c8"; //
+			case "Ome" -> "\u03c9"; //
+
+			default -> throw new IllegalStateException(s);
+		};
+
+	}
+
+	public static String toSuperScript(final String s)
+	{
+		return switch (s)
+		{
+			case "1" -> "\u00b9"; //
+			case "2" -> "²"; //
+			case "3" -> "³"; //
+			case "4" -> "\u2074"; //
+			case "5" -> "\u2075"; //
+			case "6" -> "\u2076"; //
+			case "7" -> "\u2077"; //
+			case "8" -> "\u2078"; //
+			case "9" -> "\u2079"; //
+			default -> throw new IllegalStateException(s);
+		};
 	}
 }
