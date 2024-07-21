@@ -12,11 +12,11 @@ import de.hedenus.astro.AstroException;
 
 public class StarMap
 {
-	private final MapGeneration.Settings settings;
+	private final Settings settings;
 	private final BufferedImage image;
 	private final Graphics2D graphics2d;
 
-	public StarMap(final MapGeneration.Settings settings)
+	public StarMap(final Settings settings)
 	{
 		this.settings = settings;
 		this.image = new BufferedImage(settings.size.width + 2 * settings.margin,

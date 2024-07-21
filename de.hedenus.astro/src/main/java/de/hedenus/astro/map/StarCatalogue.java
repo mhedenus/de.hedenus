@@ -6,10 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import de.hedenus.astro.AstroException;
+import de.hedenus.astro.Constellation;
 import de.hedenus.astro.geom.Declination;
 import de.hedenus.astro.geom.EquatorialCoordinates;
 import de.hedenus.astro.geom.RightAscension;
@@ -28,13 +31,15 @@ public class StarCatalogue implements Serializable
 		private final String properName;
 		private final EquatorialCoordinates coordinates;
 		private final Float apparentMagnitude;
+		private final Constellation constellation;
 
 		public Entry(final Integer nr, //
 				final String flamsteedDesignation, //
 				final String bayerDesignation, //
 				final String properName, //
 				final EquatorialCoordinates coordinates, //
-				final Float apparentMagnitude)
+				final Float apparentMagnitude, //
+				final Constellation constellation)
 		{
 			this.nr = nr;
 			this.flamsteedDesignation = flamsteedDesignation;
@@ -42,6 +47,7 @@ public class StarCatalogue implements Serializable
 			this.properName = properName;
 			this.coordinates = coordinates;
 			this.apparentMagnitude = apparentMagnitude;
+			this.constellation = constellation;
 		}
 
 		@Override
@@ -80,6 +86,11 @@ public class StarCatalogue implements Serializable
 			return apparentMagnitude;
 		}
 
+		public Constellation constellation()
+		{
+			return constellation;
+		}
+
 		public String name()
 		{
 			String result = properName;
@@ -108,6 +119,29 @@ public class StarCatalogue implements Serializable
 
 	private void load()
 	{
+		Map<Integer, String> properNames = new HashMap<>();
+		try (InputStream inputStream = getClass().getResourceAsStream("/bsc/starnames_de.dat"))
+		{
+			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+			for (String line = null; (line = br.readLine()) != null;)
+			{
+				String s = line.trim();
+				if (!s.isEmpty())
+				{
+					String[] tokens = line.split(";");
+					Integer nr = Integer.valueOf(tokens[0]);
+					String properName = tokens[tokens.length - 1];
+					properNames.put(nr, properName);
+				}
+			}
+
+		}
+		catch (IOException ex)
+		{
+			throw new AstroException(ex);
+		}
+
 		try (InputStream inputStream = getClass().getResourceAsStream("/bsc/catalog.dat"))
 		{
 			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
@@ -117,14 +151,16 @@ public class StarCatalogue implements Serializable
 				String s = line.trim();
 				if (!s.isEmpty())
 				{
-					String flamsteedDesignation = null;
-					String bayerDesignation = null;
-					String properName = null;
-
 					Integer nr = Integer.parseInt(line.substring(0, 4).trim());
 					String name = line.substring(4, 14);
+
+					String flamsteedDesignation = null;
+					String bayerDesignation = null;
+					String properName = properNames.get(nr);
+
 					EquatorialCoordinates coords = null;
 					Float magnitude = null;
+					Constellation constellation = null;
 
 					if (!(name.contains("NOVA") || //
 							nr.equals(95) || //
@@ -148,6 +184,9 @@ public class StarCatalogue implements Serializable
 							{
 								bayerDesignation += toSuperScript(byi);
 							}
+
+							String con = name.substring(7, 10);
+							constellation = Constellation.valueOf(con);
 						}
 
 						String ra_h = line.substring(75, 77);
@@ -171,7 +210,8 @@ public class StarCatalogue implements Serializable
 						magnitude = Float.valueOf(vmag.trim());
 					}
 
-					Entry entry = new Entry(nr, flamsteedDesignation, bayerDesignation, properName, coords, magnitude);
+					Entry entry = new Entry(nr, flamsteedDesignation, bayerDesignation, properName, coords, magnitude,
+							constellation);
 					entries.add(entry);
 				}
 			}
@@ -180,6 +220,7 @@ public class StarCatalogue implements Serializable
 		{
 			throw new AstroException(ex);
 		}
+
 	}
 
 	public List<Entry> entries()

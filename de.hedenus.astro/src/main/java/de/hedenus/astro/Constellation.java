@@ -75,6 +75,7 @@ public enum Constellation
 	Scl("Sculptor"), //
 	Sco("Scorpius"), //
 	Sct("Scutum"), //
+	Ser("Serpens"), //
 	Ser1("Serpens Caput"), //
 	Ser2("Serpens Cauda"), //
 	Sex("Sextans"), //
