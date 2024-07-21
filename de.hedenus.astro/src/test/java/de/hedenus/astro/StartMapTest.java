@@ -11,12 +11,9 @@ public class StartMapTest
 {
 
 	@Test
-	public void test4()
+	public void test5()
 	{
-		//	ConstellationBoundaries.constellationBoundaries(Constellation.Oct).sketch();
-
 		StarCatalogue starCatalogue = new StarCatalogue();
-
 		System.out.println(starCatalogue.entries().stream().filter(e -> e.isStar()).map(e -> e.name())
 				.collect(Collectors.toCollection(() -> new TreeSet<>())));
 

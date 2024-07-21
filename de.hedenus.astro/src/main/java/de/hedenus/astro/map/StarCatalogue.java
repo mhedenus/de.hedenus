@@ -50,6 +50,16 @@ public class StarCatalogue implements Serializable
 			this.constellation = constellation;
 		}
 
+		public Integer nr()
+		{
+			return nr;
+		}
+
+		public String HR_number()
+		{
+			return "HR " + nr;
+		}
+
 		@Override
 		public String toString()
 		{
@@ -104,7 +114,7 @@ public class StarCatalogue implements Serializable
 			}
 			if (result == null)
 			{
-				result = "HR" + nr;
+				result = HR_number();
 			}
 			return result;
 		}

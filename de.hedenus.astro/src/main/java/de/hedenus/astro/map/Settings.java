@@ -11,18 +11,32 @@ public final class Settings
 	public int margin;
 	public float starMaxMagnitude;
 	public float starScale;
-	public float rasterLineWidth;
-	public float constellationLineWidth;
-	public Color constellationLineColor;
-	public float boundariesLineWidth;
-	public Color frameColor;
+
 	public Color backgroundColor;
+	public Color frameColor;
+
 	public Color rasterColor;
-	public Color boundariesColor;
+	public float rasterLineWidth;
+	public String rasterLabelFontName;
+	public int rasterLabelFontSize;
+	public int rasterLabelGap;
+
+	public Color eclipticColor;
+	public float eclipticLineWidth;
+
+	public Color constellationLineColor;
+	public float constellationLineWidth;
+	public String constellationLabelFontName;
+	public Color constellationLabelColor;
+	public int constellationLabelFontSize;
+
+	public Color constellationBoundariesColor;
+	public float constellationBoundariesLineWidth;
+
 	public Color starColor;
-	public String starFontName;
+	public String starLabelFontName;
 	public Color starLabelColor;
-	public int starFontSize;
+	public int starLabelFontSize;
 	public int starLabelGap;
 	public int starLabelLayoutPasses = 4;
 
@@ -40,16 +54,26 @@ public final class Settings
 		settings.starMaxMagnitude = 6.5f;
 		settings.starScale = dim / 3000.0f;
 		settings.rasterLineWidth = dim / 5000.0f;
+		settings.rasterLabelFontName = Font.SERIF;
+		settings.rasterLabelFontSize = Math.round(0.0035f * dim);
+		settings.rasterLabelGap = dim / 2000;
 		settings.constellationLineWidth = dim / 4000.0f;
-		settings.boundariesLineWidth = settings.constellationLineWidth;
-		settings.starFontSize = Math.round(0.0025f * dim);
-		settings.starFontName = Font.SERIF;
+		settings.constellationBoundariesLineWidth = settings.constellationLineWidth;
+		settings.eclipticLineWidth = dim / 3500.0f;
+
+		settings.constellationLabelFontName = Font.SANS_SERIF;
+		settings.constellationLabelFontSize = Math.round(0.01f * dim);
+
+		settings.starLabelFontName = Font.SERIF;
+		settings.starLabelFontSize = Math.round(0.0025f * dim);
 		settings.starLabelGap = dim / 2000;
 
 		settings.frameColor = Color.darkGray;
 		settings.backgroundColor = Color.black;
 		settings.rasterColor = Color.darkGray;
-		settings.boundariesColor = Color.lightGray;
+		settings.eclipticColor = Color.yellow;
+		settings.constellationBoundariesColor = Color.lightGray;
+		settings.constellationLabelColor = new Color(192, 192, 192, 128);
 		settings.constellationLineColor = Color.green;
 		settings.starColor = Color.white;
 		settings.starLabelColor = Color.red;

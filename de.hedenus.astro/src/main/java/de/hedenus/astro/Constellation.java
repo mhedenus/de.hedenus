@@ -104,4 +104,14 @@ public enum Constellation
 	{
 		return IAU_name;
 	}
+
+	public String label()
+	{
+		return switch (this)
+		{
+			case Ser1 -> Ser.name() + "\u00b9";
+			case Ser2 -> Ser.name() + "²";
+			default -> name();
+		};
+	}
 }

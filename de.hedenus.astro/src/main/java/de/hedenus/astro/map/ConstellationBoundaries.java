@@ -89,45 +89,6 @@ public class ConstellationBoundaries implements Serializable
 		return this;
 	}
 
-	/*
-	public static Map<Constellation, ConstellationBoundaries> loadBarbierData()
-	{
-		Map<Constellation, ConstellationBoundaries> result = new HashMap<>();
-	
-		Map<String, Constellation> constuc = Stream.of(Constellation.values())
-				.collect(Collectors.toMap(c -> c.name().toUpperCase(), c -> c));
-	
-		try (InputStream inputStream = ConstellationBoundaries.class.getResourceAsStream("/pbarbier/bound_in_20.txt"))
-		{
-			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-	
-			for (String line = null; (line = br.readLine()) != null;)
-			{
-				String s = line.trim();
-				if (!s.isEmpty())
-				{
-					String[] tokens = s.split("\\s+");
-					Constellation constellation = constuc.get(tokens[2]);
-					ConstellationBoundaries constellationBoundaries = result.get(constellation);
-					if (constellationBoundaries == null)
-					{
-						constellationBoundaries = new ConstellationBoundaries(constellation);
-						result.put(constellation, constellationBoundaries);
-					}
-					RightAscension ra = RightAscension.fromDecimalDegree(360.0 * Double.valueOf(tokens[0]) / 24.0);
-					Declination dec = Declination.fromDecimalDegree(Double.valueOf(tokens[1]));
-					constellationBoundaries.points().add(new EquatorialCoordinates(ra, dec));
-				}
-			}
-		}
-		catch (IOException ex)
-		{
-			throw new AstroException(ex);
-		}
-		return result;
-	}
-	*/
-
 	public List<SphericalCoordinates> points()
 	{
 		return points;
