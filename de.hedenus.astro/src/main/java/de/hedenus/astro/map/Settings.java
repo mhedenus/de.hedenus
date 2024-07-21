@@ -7,6 +7,7 @@ import java.awt.Font;
 public final class Settings
 {
 	public final int dim;
+	public boolean supersampling = true;
 	public Dimension size;
 	public int margin;
 	public float starMaxMagnitude;

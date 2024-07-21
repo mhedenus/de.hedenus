@@ -34,7 +34,7 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(8000).draw().save();
+		new MapGeneration(40000).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
