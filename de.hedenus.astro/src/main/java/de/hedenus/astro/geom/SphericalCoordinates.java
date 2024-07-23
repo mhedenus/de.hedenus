@@ -3,6 +3,8 @@ package de.hedenus.astro.geom;
 import java.io.Serializable;
 import java.util.Objects;
 
+import de.hedenus.astro.common.Formats;
+
 public class SphericalCoordinates implements Serializable
 {
 	private static final long serialVersionUID = 6965263670948555845L;
@@ -53,4 +55,9 @@ public class SphericalCoordinates implements Serializable
 		return result;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "(" + Formats.formatDegrees(x.deg()) + "," + Formats.formatDegrees(y.deg()) + ")";
+	}
 }

@@ -14,12 +14,17 @@ public class MapProjection
 {
 	private final double w;
 	private final double h;
+	private final double w2;
+	private final double h2;
 	private double alpha = 0.0;
+	private final double lam0 = Math.PI; // -pi <= phi < pi
 
 	public MapProjection(final Dimension size)
 	{
-		this.w = size.width - 1;
-		this.h = size.height - 1;
+		this.w = size.width;
+		this.h = size.height;
+		this.w2 = 0.5 * w;
+		this.h2 = 0.5 * h;
 	}
 
 	public Point project(final SphericalCoordinates x)
@@ -36,14 +41,32 @@ public class MapProjection
 		double phi = dec.rad();
 		double theta = theta(phi);
 
-		double lam0 = Math.PI; // -pi <= phi < pi
 		double sx = (lam - lam0) * Math.cos(theta) / Math.PI;
 		double sy = Math.sin(theta);
 
-		int px = (int) Math.round((1.0 * 0.5 * w * sx) + (0.5 * w));
-		int py = (int) Math.round((0.5 * h) - (1.0 * 0.5 * h * sy));
+		int px = (int) Math.round((w2 * sx) + w2);
+		int py = (int) Math.round(h2 - (h2 * sy));
 
 		return new Point(px, py);
+	}
+
+	public SphericalCoordinates inverseMollweide(final int px, final int py)
+	{
+		SphericalCoordinates result = null;
+		double sx = (px - w2) / w2;
+		double sy = (h2 - py) / h2;
+
+		if (sy >= -1.0 && sy <= 1.0)
+		{
+			double theta = Math.asin(sy);
+
+			double ra = Angle.fold360(180.0 - Math.toDegrees(lam0 + ((Math.PI * sx) / Math.cos(theta))));
+			double dec = Math.toDegrees(Math.asin((2.0 * theta + Math.sin(2.0 * theta)) / Math.PI));
+
+			result = new SphericalCoordinates(new DecimalDegree(ra), new DecimalDegree(dec));
+		}
+
+		return result;
 	}
 
 	public void rotation(final double alpha)

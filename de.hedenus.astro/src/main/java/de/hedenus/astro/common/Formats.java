@@ -40,7 +40,8 @@ public class Formats
 		try
 		{
 			xmlDatatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e)
+		}
+		catch (DatatypeConfigurationException e)
 		{
 			throw new Error(e);
 		}
@@ -51,7 +52,7 @@ public class Formats
 		return xmlDatatypeFactory.newXMLGregorianCalendar(dateTime).toGregorianCalendar().getTimeInMillis();
 	}
 
-	private static final DecimalFormat DF = new DecimalFormat("0.000000°", new DecimalFormatSymbols(Locale.US));
+	private static final DecimalFormat DF = new DecimalFormat("0.000000Â°", new DecimalFormatSymbols(Locale.US));
 
 	public static String formatDegrees(final double deg)
 	{

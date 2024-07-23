@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,10 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
+
 import de.hedenus.astro.AstroException;
 import de.hedenus.astro.Constellation;
 import de.hedenus.astro.common.FileCache;
 import de.hedenus.astro.common.Log;
+import de.hedenus.astro.geom.Angle;
 import de.hedenus.astro.geom.DecimalDegree;
 import de.hedenus.astro.geom.SphericalCoordinates;
 import de.hedenus.astro.map.StarCatalogue.Entry;
@@ -34,13 +38,13 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(40000).draw().save();
+		new MapGeneration(Settings.defaultSettings(36000, true)).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
 
 	private final Settings settings;
-	private final StarMap map;
+	private final StarMap starMap;
 	private final Graphics2D g2d;
 	private final MapProjection mapProjection;
 	private final StarCatalogue starCatalogue;
@@ -48,11 +52,11 @@ public class MapGeneration
 	private final ConstellationCenters constellationCenters;
 	private final StarLabels starLabels;
 
-	public MapGeneration(final int dim)
+	public MapGeneration(final Settings settings)
 	{
-		this.settings = Settings.defaultSettings(dim);
-		this.map = new StarMap(settings);
-		this.g2d = map.graphics2d();
+		this.settings = settings;
+		this.starMap = new StarMap(settings);
+		this.g2d = starMap.graphics2d();
 		this.mapProjection = new MapProjection(settings.size);
 
 		this.starCatalogue = new StarCatalogue();
@@ -65,6 +69,9 @@ public class MapGeneration
 
 	public MapGeneration draw()
 	{
+		drawBackgroundMilkyWay();
+		//drawBackground();
+
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
@@ -91,11 +98,88 @@ public class MapGeneration
 		}
 	}
 
-	public MapGeneration drawRaster()
+	public MapGeneration drawBackground()
 	{
 		g2d.setColor(settings.backgroundColor);
 		g2d.fill(new Ellipse2D.Double(0, 0, settings.size.width, settings.size.height));
+		return this;
+	}
 
+	public MapGeneration drawBackgroundMilkyWay()
+	{
+		g2d.setColor(settings.chromaKey);
+		g2d.fill(new Ellipse2D.Double(0, 0, settings.size.width, settings.size.height));
+
+		BufferedImage milkyWay = loadMilkyWay();
+		final int gw = milkyWay.getWidth();
+		final int gh = milkyWay.getHeight();
+
+		BufferedImage map = starMap.image();
+
+		final int width = map.getWidth();
+		final int height = map.getHeight();
+		final int chromaRGB = settings.chromaKey.getRGB();
+
+		int progress = 0;
+		for (int y = 0; y < height; y++)
+		{
+			int perc = y * 100 / height;
+			if (perc > progress)
+			{
+				progress = perc;
+				Log.status("Rendering Milky Way: " + progress + "%");
+			}
+
+			for (int x = 0; x < width; x++)
+			{
+				int rgb = map.getRGB(x, y);
+				if (rgb == chromaRGB)
+				{
+					rgb = settings.frameColor.getRGB();
+					int px = (x - settings.margin);
+					int py = (y - settings.margin);
+
+					SphericalCoordinates eq = mapProjection.inverseMollweide(px, py);
+					if (eq != null)
+					{
+						SphericalCoordinates ga = GalacticCoordinates.convert(eq);
+						double l = Angle.fold360(180.0 - ga.x().deg());
+						double b = ga.y().deg();
+
+						int gx = (int) ((l / 360.0) * gw);
+						int gy = gh - 1 - (int) (((b + 90.0) / 180.0) * gh);
+
+						if (gx >= 0 && gx < gw && gy >= 0 && gy < gh)
+						{
+							rgb = milkyWay.getRGB(gx, gy);
+						}
+					}
+					map.setRGB(x, y, rgb);
+				}
+			}
+		}
+		Log.info("");
+
+		return this;
+	}
+
+	private BufferedImage loadMilkyWay()
+	{
+		Log.infoBegin("Loading Milky Way: " + settings.milkyWay.getAbsolutePath() + "...");
+		try
+		{
+			BufferedImage image = ImageIO.read(settings.milkyWay);
+			Log.info("done");
+			return image;
+		}
+		catch (IOException ex)
+		{
+			throw new AstroException(ex);
+		}
+	}
+
+	public MapGeneration drawRaster()
+	{
 		g2d.setColor(settings.rasterColor);
 		g2d.setStroke(new BasicStroke(settings.rasterLineWidth));
 
@@ -121,7 +205,7 @@ public class MapGeneration
 
 		//// labels
 
-		g2d.setFont(new Font(settings.rasterLabelFontName, Font.PLAIN, settings.rasterLabelFontSize));
+		g2d.setFont(new Font(settings.rasterLabelFontName, Font.BOLD, settings.rasterLabelFontSize));
 		FontMetrics fontMetrics = g2d.getFontMetrics();
 
 		// ra
@@ -404,7 +488,7 @@ public class MapGeneration
 
 	public MapGeneration save()
 	{
-		map.save(new File("target", "starMap_" + settings.dim + ".png"));
+		starMap.save(new File("target", "starMap_" + settings.dim + ".png"));
 		return this;
 	}
 }

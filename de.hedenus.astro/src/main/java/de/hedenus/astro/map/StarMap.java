@@ -33,6 +33,11 @@ public class StarMap
 		return graphics2d;
 	}
 
+	public BufferedImage image()
+	{
+		return image;
+	}
+
 	public Graphics2D graphics2d()
 	{
 		return graphics2d;
@@ -44,13 +49,20 @@ public class StarMap
 
 		if (settings.supersampling)
 		{
-			long t0 = System.currentTimeMillis();
-
 			final int w2 = image.getWidth() / 2;
 			final int h2 = image.getHeight() / 2;
 			BufferedImage im2 = new BufferedImage(w2, h2, BufferedImage.TYPE_INT_ARGB);
+
+			int progress = 0;
 			for (int x = 0; x < w2; x++)
 			{
+				int perc = x * 100 / w2;
+				if (perc > progress)
+				{
+					progress = perc;
+					Log.status("Applying Supersampling: " + progress + "%");
+				}
+
 				for (int y = 0; y < h2; y++)
 				{
 					int x2 = 2 * x;
@@ -70,14 +82,14 @@ public class StarMap
 				}
 			}
 			result = im2;
-
-			long t1 = System.currentTimeMillis();
-			Log.info("Supersampling done in " + (t1 - t0) / 1000.0f + "s");
 		}
 
+		Log.info("");
 		try
 		{
+			Log.infoBegin("Saving result to: " + file.getAbsolutePath() + "...");
 			ImageIO.write(result, "PNG", file);
+			Log.info("done");
 		}
 		catch (IOException ex)
 		{

@@ -1,5 +1,11 @@
 # Thrid Party Sources used by this Software
 
+## Milky Way Image
+
+*Gaia*'s all-sky view displayed in an equirectangular projection:
+
+	https://sci.esa.int/web/gaia/-/60196-gaia-s-sky-in-colour-equirectangular-projection
+
 ## Stars
 
 *Bright Star Catalogue, 5th Revised Ed* aka *Yale Catalogue of Bright Stars*:
