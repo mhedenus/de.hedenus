@@ -5,9 +5,17 @@ import java.awt.Dimension;
 import org.junit.jupiter.api.Test;
 
 import de.hedenus.astro.map.MapProjection;
+import de.hedenus.astro.map.Settings;
+import de.hedenus.astro.map.StarCatalogue;
 
 public class StartMapTest
 {
+	@Test
+	public void test4()
+	{
+		System.out.println(new StarCatalogue().stars(Settings.defaultSettings(0, false).starMaxMagnitude).count());
+	}
+
 	@Test
 	public void test5()
 	{

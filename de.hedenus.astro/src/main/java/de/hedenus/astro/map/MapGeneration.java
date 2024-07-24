@@ -38,7 +38,7 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(Settings.defaultSettings(36000, true)).draw().save();
+		new MapGeneration(Settings.defaultSettings(20000, true)).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
@@ -48,9 +48,10 @@ public class MapGeneration
 	private final Graphics2D g2d;
 	private final MapProjection mapProjection;
 	private final StarCatalogue starCatalogue;
+	private final OtherObjects otherObjects;
 	private final ConstellationLines constellationLines;
 	private final ConstellationCenters constellationCenters;
-	private final StarLabels starLabels;
+	private final Labels labels;
 
 	public MapGeneration(final Settings settings)
 	{
@@ -60,11 +61,12 @@ public class MapGeneration
 		this.mapProjection = new MapProjection(settings.size);
 
 		this.starCatalogue = new StarCatalogue();
+		this.otherObjects = new OtherObjects();
 		this.constellationLines = FileCache.instance().get("constellationLines",
 				() -> new ConstellationLines().compute(starCatalogue));
 		this.constellationCenters = new ConstellationCenters();
 
-		this.starLabels = new StarLabels(settings);
+		this.labels = new Labels(settings);
 	}
 
 	public MapGeneration draw()
@@ -82,6 +84,7 @@ public class MapGeneration
 
 		drawConstellationLines();
 		drawStars();
+		drawOtherObjects();
 		drawStarLabels();
 		drawConstellationLabels();
 
@@ -357,10 +360,14 @@ public class MapGeneration
 		return this;
 	}
 
+	private Font starLabelFont;
+	private Font otherObjectsLabelFont;
+
 	public MapGeneration drawStars()
 	{
 		g2d.setColor(settings.starColor);
-		g2d.setFont(new Font(settings.starLabelFontName, Font.PLAIN, settings.starLabelFontSize));
+		this.starLabelFont = new Font(settings.starLabelFontName, Font.PLAIN, settings.starLabelFontSize);
+		g2d.setFont(starLabelFont);
 		FontMetrics fontMetrics = g2d.getFontMetrics();
 
 		List<StarCatalogue.Entry> starsWithProperName = new ArrayList<>();
@@ -377,7 +384,7 @@ public class MapGeneration
 			if (bayerDesignation != null)
 			{
 				Rectangle bounds = fontMetrics.getStringBounds(bayerDesignation, g2d).getBounds();
-				starLabels.add(new StarLabel(settings, bayerDesignation, px, starRadius, bounds));
+				labels.add(new Label(settings, bayerDesignation, px, starRadius, bounds, starLabelFont));
 
 				String properName = entry.properName();
 				if (properName != null)
@@ -472,13 +479,35 @@ public class MapGeneration
 		return this;
 	}
 
+	public MapGeneration drawOtherObjects()
+	{
+		g2d.setColor(settings.starLabelColor);
+		g2d.setStroke(new BasicStroke(settings.otherObjectsLineWidth));
+		this.otherObjectsLabelFont = new Font(settings.otherObjectsLabelFontName, Font.BOLD,
+				settings.starLabelFontSize);
+		g2d.setFont(otherObjectsLabelFont);
+
+		FontMetrics fontMetrics = g2d.getFontMetrics();
+
+		for (OtherObjects.Entry entry : otherObjects.objects())
+		{
+			Point px = mapProjection.project(entry.coordinates());
+			int r = Math.round(settings.starScale * 8.0f);
+			g2d.drawOval(px.x - r, px.y - r, 2 * r, 2 * r);
+
+			labels.add(new Label(settings, entry.name(), px, r,
+					fontMetrics.getStringBounds(entry.name(), g2d).getBounds(), otherObjectsLabelFont));
+
+		}
+		return this;
+	}
+
 	public MapGeneration drawStarLabels()
 	{
 		g2d.setColor(settings.starLabelColor);
 
-		starLabels.layout();
-
-		for (StarLabel label : starLabels)
+		labels.layout();
+		for (Label label : labels)
 		{
 			label.draw(g2d);
 		}

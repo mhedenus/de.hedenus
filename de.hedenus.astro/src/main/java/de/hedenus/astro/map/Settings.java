@@ -46,6 +46,9 @@ public final class Settings
 	public int starLabelGap;
 	public int starLabelLayoutPasses = 6;
 
+	public float otherObjectsLineWidth;
+	public String otherObjectsLabelFontName;
+
 	public Settings(final int dim, final boolean supersampling)
 	{
 		this.dim = dim;
@@ -65,7 +68,7 @@ public final class Settings
 		settings.milkyWay = new File(".cache/Gaia_36k.bmp");
 
 		settings.size = new Dimension(dim, dim / 2);
-		settings.margin = Math.round(0.005f * settings.dim);
+		settings.margin = Math.round(0.0075f * settings.dim);
 		settings.starMaxMagnitude = 6.5f;
 		settings.starScale = Math.round(0.00035f * dim);
 		settings.rasterLineWidth = Math.round(0.0002f * dim);
@@ -74,7 +77,7 @@ public final class Settings
 		settings.rasterLabelGap = Math.round(0.0005f * dim);
 		settings.constellationLineWidth = Math.round(0.0002f * dim);
 		settings.constellationBoundariesLineWidth = settings.constellationLineWidth;
-		settings.eclipticLineWidth = Math.round(0.0002f * dim);
+		settings.eclipticLineWidth = Math.round(0.00025f * dim);
 
 		settings.constellationLabelFontName = Font.SANS_SERIF;
 		settings.constellationLabelFontSize = Math.round(0.01f * dim);
@@ -82,6 +85,8 @@ public final class Settings
 		settings.starLabelFontName = Font.SERIF;
 		settings.starLabelFontSize = Math.round(0.0035f * dim);
 		settings.starLabelGap = Math.round(0.0005f * dim);
+		settings.otherObjectsLabelFontName = Font.SANS_SERIF;
+		settings.otherObjectsLineWidth = Math.round(0.0002f * dim);
 
 		settings.frameColor = Color.darkGray;
 		settings.backgroundColor = Color.black;

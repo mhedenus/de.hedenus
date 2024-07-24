@@ -5,25 +5,25 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class StarLabels implements Serializable, Iterable<StarLabel>
+public class Labels implements Serializable, Iterable<Label>
 {
 	private static final long serialVersionUID = -7076878111448624945L;
 
 	private final Settings settings;
-	private final List<StarLabel> labels = new ArrayList<>();
+	private final List<Label> labels = new ArrayList<>();
 
-	public StarLabels(final Settings settings)
+	public Labels(final Settings settings)
 	{
 		this.settings = settings;
 	}
 
 	@Override
-	public Iterator<StarLabel> iterator()
+	public Iterator<Label> iterator()
 	{
 		return labels.iterator();
 	}
 
-	public void add(final StarLabel starLabel)
+	public void add(final Label starLabel)
 	{
 		this.labels.add(starLabel);
 	}
@@ -37,11 +37,11 @@ public class StarLabels implements Serializable, Iterable<StarLabel>
 
 			for (int i = 0; i < len; i++)
 			{
-				StarLabel label1 = labels.get(i);
+				Label label1 = labels.get(i);
 
 				for (int j = i + 1; j < len; j++)
 				{
-					StarLabel label2 = labels.get(j);
+					Label label2 = labels.get(j);
 
 					if (label1.layout().intersects(label2.layout()))
 					{
