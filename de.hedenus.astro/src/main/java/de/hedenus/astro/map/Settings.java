@@ -21,6 +21,10 @@ public final class Settings
 	public Color frameColor;
 	public Color chromaKey = new Color(0, 255, 0);
 
+	public Color signatureColor;
+	public String signatureFontName;
+	public int signatureFontSize;
+
 	public Color rasterColor;
 	public float rasterLineWidth;
 	public String rasterLabelFontName;
@@ -59,21 +63,20 @@ public final class Settings
 	{
 		Settings settings = new Settings(dim, supersampling);
 
-		settings.milkyWay = new File(
-				".cache/1567215018748-ESA_Gaia_DR2_AllSky_Brightness_Colour_Cartesian_2000x1000.png");
-		settings.milkyWay = new File(
-				".cache/1567215018536-ESA_Gaia_DR2_AllSky_Brightness_Colour_Cartesian_4000x2000.png");
-		settings.milkyWay = new File(".cache/milkyway_2020_4k_print.jpg");
-		settings.milkyWay = new File(".cache/gaia_20k.jpg"); //
 		settings.milkyWay = new File(".cache/Gaia_36k.bmp");
 
 		settings.size = new Dimension(dim, dim / 2);
 		settings.margin = Math.round(0.0075f * settings.dim);
+
+		settings.signatureColor = Color.white;
+		settings.signatureFontName = "Freestyle Script";
+		settings.signatureFontSize = Math.round(0.0075f * dim);
+
 		settings.starMaxMagnitude = 6.5f;
 		settings.starScale = Math.round(0.00035f * dim);
 		settings.rasterLineWidth = Math.round(0.0002f * dim);
 		settings.rasterLabelFontName = Font.SERIF;
-		settings.rasterLabelFontSize = Math.round(0.0035f * dim);
+		settings.rasterLabelFontSize = Math.round(0.005f * dim);
 		settings.rasterLabelGap = Math.round(0.0005f * dim);
 		settings.constellationLineWidth = Math.round(0.0002f * dim);
 		settings.constellationBoundariesLineWidth = settings.constellationLineWidth;

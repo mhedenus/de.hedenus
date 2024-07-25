@@ -46,6 +46,9 @@ public class OtherObjects implements Serializable
 		this.objects.add(new Entry("M 33", new EquatorialCoordinates( //
 				RightAscension.fromString("01 33 50.9"), Declination.fromString("30 39 37"))));
 
+		this.objects.add(new Entry("M 42", new EquatorialCoordinates( //
+				RightAscension.fromString("05 35 16.5"), Declination.fromString("-05 23 23"))));
+
 		this.objects.add(new Entry("M 45", new EquatorialCoordinates( //
 				RightAscension.fromString("03 47 24"), Declination.fromString("24 07 00"))));
 

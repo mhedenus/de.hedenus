@@ -38,7 +38,7 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(Settings.defaultSettings(20000, true)).draw().save();
+		new MapGeneration(Settings.defaultSettings(10000, false)).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
@@ -71,34 +71,24 @@ public class MapGeneration
 
 	public MapGeneration draw()
 	{
-		drawBackgroundMilkyWay();
-		//drawBackground();
+		//drawBackgroundMilkyWay();
+		drawBackground();
 
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
 		drawRaster();
-		drawConstellationBoundaries();
-		drawEcliptic();
+		//drawConstellationBoundaries();
+		//drawEcliptic();
 
-		drawConstellationLines();
+		//drawConstellationLines();
 		drawStars();
 		drawOtherObjects();
 		drawStarLabels();
 		drawConstellationLabels();
 
 		return this;
-	}
-
-	public void animate()
-	{
-		for (int a = 0; a < 360; a++)
-		{
-			mapProjection.rotation(a);
-			draw();
-			//save("anim/animation_" + a + ".png");
-		}
 	}
 
 	public MapGeneration drawBackground()

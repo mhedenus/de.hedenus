@@ -1,6 +1,8 @@
 package de.hedenus.astro.map;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,16 @@ public class StarMap
 		Graphics2D graphics2d = image.createGraphics();
 		graphics2d.setColor(settings.frameColor);
 		graphics2d.fillRect(0, 0, this.image.getWidth(), this.image.getHeight());
+
+		graphics2d.setColor(settings.signatureColor);
+		graphics2d.setFont(new Font(settings.signatureFontName, Font.PLAIN, settings.signatureFontSize));
+
+		int m = (int) (0.005f * settings.dim);
+		String signature = "Michael Hedenus 2024";
+		Rectangle bounds = graphics2d.getFontMetrics().getStringBounds(signature, graphics2d).getBounds();
+		graphics2d.drawString(signature, this.image.getWidth() - (int) bounds.getWidth() - m, //
+				this.image.getHeight() - (int) bounds.getHeight() - m);
+
 		graphics2d.translate(settings.margin, settings.margin);
 		return graphics2d;
 	}
