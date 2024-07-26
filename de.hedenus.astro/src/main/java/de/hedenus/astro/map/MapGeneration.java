@@ -7,6 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
@@ -38,7 +40,7 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(Settings.defaultSettings(10000, false)).draw().save();
+		new MapGeneration(Settings.defaultSettings(36000, true)).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
@@ -71,21 +73,19 @@ public class MapGeneration
 
 	public MapGeneration draw()
 	{
-		//drawBackgroundMilkyWay();
-		drawBackground();
+		drawBackgroundMilkyWay();
+		//drawBackground();
 
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
 		drawRaster();
-		//drawConstellationBoundaries();
-		//drawEcliptic();
+		drawConstellationBoundaries();
+		drawEcliptic();
 
-		//drawConstellationLines();
+		drawConstellationLines();
 		drawStars();
 		drawOtherObjects();
-		drawStarLabels();
+		drawLabels();
 		drawConstellationLabels();
 
 		return this;
@@ -358,7 +358,8 @@ public class MapGeneration
 		g2d.setColor(settings.starColor);
 		this.starLabelFont = new Font(settings.starLabelFontName, Font.PLAIN, settings.starLabelFontSize);
 		g2d.setFont(starLabelFont);
-		FontMetrics fontMetrics = g2d.getFontMetrics();
+		FontRenderContext frc = g2d.getFontRenderContext();
+		int hgap = (int) new TextLayout("|", starLabelFont, frc).getBounds().getWidth();
 
 		List<StarCatalogue.Entry> starsWithProperName = new ArrayList<>();
 
@@ -373,8 +374,8 @@ public class MapGeneration
 			String bayerDesignation = entry.bayerDesignation();
 			if (bayerDesignation != null)
 			{
-				Rectangle bounds = fontMetrics.getStringBounds(bayerDesignation, g2d).getBounds();
-				labels.add(new Label(settings, bayerDesignation, px, starRadius, bounds, starLabelFont));
+				Rectangle bounds = new TextLayout(bayerDesignation, starLabelFont, frc).getBounds().getBounds();
+				labels.add(new Label(bayerDesignation, px, starRadius, bounds, starLabelFont, hgap));
 
 				String properName = entry.properName();
 				if (properName != null)
@@ -477,7 +478,8 @@ public class MapGeneration
 				settings.starLabelFontSize);
 		g2d.setFont(otherObjectsLabelFont);
 
-		FontMetrics fontMetrics = g2d.getFontMetrics();
+		FontRenderContext frc = g2d.getFontRenderContext();
+		int hgap = (int) new TextLayout("|", otherObjectsLabelFont, frc).getBounds().getWidth();
 
 		for (OtherObjects.Entry entry : otherObjects.objects())
 		{
@@ -485,22 +487,38 @@ public class MapGeneration
 			int r = Math.round(settings.starScale * 8.0f);
 			g2d.drawOval(px.x - r, px.y - r, 2 * r, 2 * r);
 
-			labels.add(new Label(settings, entry.name(), px, r,
-					fontMetrics.getStringBounds(entry.name(), g2d).getBounds(), otherObjectsLabelFont));
+			int position = -2;
+			if (entry.name().equals("47 Tuc") || entry.name().equals("\u03c9 Cen"))
+			{
+				position = -4;
+			}
+
+			labels.add(new Label(entry.name(), px, r,
+					new TextLayout(entry.name(), otherObjectsLabelFont, frc).getBounds().getBounds(),
+					otherObjectsLabelFont, hgap).position(position));
 
 		}
 		return this;
 	}
 
-	public MapGeneration drawStarLabels()
+	public MapGeneration drawLabels()
 	{
 		g2d.setColor(settings.starLabelColor);
 
-		labels.layout();
-		for (Label label : labels)
+		List<Labels.LayoutSolution> solutions = new ArrayList<>();
+		for (int i = 1; i <= 33; i++)
 		{
-			label.draw(g2d);
+			Labels.LayoutSolution solution = labels.layout();
+			solutions.add(solution);
+			Log.info("Solution " + i + ": " + solution.overlaps);
 		}
+
+		solutions.sort((l1, l2) -> l1.overlaps - l2.overlaps);
+
+		Labels.LayoutSolution best = solutions.get(0);
+		Log.info("Using solution: " + best.overlaps);
+
+		labels.draw(g2d, best);
 
 		return this;
 	}

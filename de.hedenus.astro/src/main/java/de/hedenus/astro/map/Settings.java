@@ -47,8 +47,7 @@ public final class Settings
 	public String starLabelFontName;
 	public Color starLabelColor;
 	public int starLabelFontSize;
-	public int starLabelGap;
-	public int starLabelLayoutPasses = 6;
+	public int starLabelLayoutPasses = 5;
 
 	public float otherObjectsLineWidth;
 	public String otherObjectsLabelFontName;
@@ -76,7 +75,7 @@ public final class Settings
 		settings.starScale = Math.round(0.00035f * dim);
 		settings.rasterLineWidth = Math.round(0.0002f * dim);
 		settings.rasterLabelFontName = Font.SERIF;
-		settings.rasterLabelFontSize = Math.round(0.005f * dim);
+		settings.rasterLabelFontSize = Math.round(0.0065f * dim);
 		settings.rasterLabelGap = Math.round(0.0005f * dim);
 		settings.constellationLineWidth = Math.round(0.0002f * dim);
 		settings.constellationBoundariesLineWidth = settings.constellationLineWidth;
@@ -87,7 +86,6 @@ public final class Settings
 
 		settings.starLabelFontName = Font.SERIF;
 		settings.starLabelFontSize = Math.round(0.0035f * dim);
-		settings.starLabelGap = Math.round(0.0005f * dim);
 		settings.otherObjectsLabelFontName = Font.SANS_SERIF;
 		settings.otherObjectsLineWidth = Math.round(0.0002f * dim);
 

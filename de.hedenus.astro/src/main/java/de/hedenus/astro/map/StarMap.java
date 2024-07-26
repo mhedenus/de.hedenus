@@ -3,6 +3,7 @@ package de.hedenus.astro.map;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,9 @@ public class StarMap
 		graphics2d.fillRect(0, 0, this.image.getWidth(), this.image.getHeight());
 
 		graphics2d.setColor(settings.signatureColor);
+		graphics2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		graphics2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+
 		graphics2d.setFont(new Font(settings.signatureFontName, Font.PLAIN, settings.signatureFontSize));
 
 		int m = (int) (0.005f * settings.dim);
