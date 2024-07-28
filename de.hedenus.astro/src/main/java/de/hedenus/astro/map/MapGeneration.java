@@ -305,8 +305,9 @@ public class MapGeneration
 	public MapGeneration drawConstellationLabels()
 	{
 		g2d.setColor(settings.constellationLabelColor);
-		g2d.setFont(new Font(settings.constellationLabelFontName, Font.BOLD, settings.constellationLabelFontSize));
-		FontMetrics fontMetrics = g2d.getFontMetrics();
+		Font font = new Font(settings.constellationLabelFontName, Font.BOLD, settings.constellationLabelFontSize);
+		g2d.setFont(font);
+		FontRenderContext frc = g2d.getFontRenderContext();
 
 		for (Constellation constellation : Constellation.values())
 		{
@@ -315,10 +316,8 @@ public class MapGeneration
 				Point px = mapProjection.project(constellationCenters.center(constellation));
 
 				String name = constellation.label();
-
-				Rectangle bounds = fontMetrics.getStringBounds(name, g2d).getBounds();
-
-				g2d.drawString(name, px.x - bounds.width / 2, px.y + bounds.y + bounds.height / 2);
+				Rectangle bounds = new TextLayout(name, font, frc).getBounds().getBounds();
+				g2d.drawString(name, px.x - bounds.width / 2, px.y - bounds.y - (bounds.height / 2));
 			}
 		}
 		return this;
@@ -506,7 +505,7 @@ public class MapGeneration
 		g2d.setColor(settings.starLabelColor);
 
 		List<Labels.LayoutSolution> solutions = new ArrayList<>();
-		for (int i = 1; i <= 33; i++)
+		for (int i = 1; i <= 100; i++)
 		{
 			Labels.LayoutSolution solution = labels.layout();
 			solutions.add(solution);

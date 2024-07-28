@@ -39,11 +39,11 @@ public class StarMap
 
 		graphics2d.setFont(new Font(settings.signatureFontName, Font.PLAIN, settings.signatureFontSize));
 
-		int m = (int) (0.005f * settings.dim);
+		int m = (int) (0.0072f * settings.dim);
 		String signature = "Michael Hedenus 2024";
 		Rectangle bounds = graphics2d.getFontMetrics().getStringBounds(signature, graphics2d).getBounds();
-		graphics2d.drawString(signature, this.image.getWidth() - (int) bounds.getWidth() - m, //
-				this.image.getHeight() - (int) bounds.getHeight() - m);
+		graphics2d.drawString(signature, this.image.getWidth() - (int) bounds.getWidth() - 2 * m, //
+				this.image.getHeight() - (int) bounds.getHeight() - m - bounds.y);
 
 		graphics2d.translate(settings.margin, settings.margin);
 		return graphics2d;

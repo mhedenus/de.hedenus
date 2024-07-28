@@ -72,20 +72,20 @@ public final class Settings
 		settings.signatureFontSize = Math.round(0.0075f * dim);
 
 		settings.starMaxMagnitude = 6.5f;
-		settings.starScale = Math.round(0.00035f * dim);
+		settings.starScale = Math.round(0.0004f * dim);
 		settings.rasterLineWidth = Math.round(0.0002f * dim);
 		settings.rasterLabelFontName = Font.SERIF;
 		settings.rasterLabelFontSize = Math.round(0.0065f * dim);
 		settings.rasterLabelGap = Math.round(0.0005f * dim);
-		settings.constellationLineWidth = Math.round(0.0002f * dim);
-		settings.constellationBoundariesLineWidth = settings.constellationLineWidth;
-		settings.eclipticLineWidth = Math.round(0.00025f * dim);
+		settings.constellationLineWidth = Math.round(0.00025f * dim);
+		settings.constellationBoundariesLineWidth = settings.rasterLineWidth;
+		settings.eclipticLineWidth = Math.round(0.0003f * dim);
 
 		settings.constellationLabelFontName = Font.SANS_SERIF;
 		settings.constellationLabelFontSize = Math.round(0.01f * dim);
 
 		settings.starLabelFontName = Font.SERIF;
-		settings.starLabelFontSize = Math.round(0.0035f * dim);
+		settings.starLabelFontSize = Math.round(0.0045f * dim);
 		settings.otherObjectsLabelFontName = Font.SANS_SERIF;
 		settings.otherObjectsLineWidth = Math.round(0.0002f * dim);
 
