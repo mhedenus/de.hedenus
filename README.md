@@ -1,12 +1,44 @@
-# Thrid Party Sources used by this Software
 
-## Milky Way Image
+# Star Map
+
+This Java application produces a high resolution *Star Map* (ca. 18000x9000 pixels).
+
+## HOW-TO
+
+This application has been developed with [OpenJDK 22](https://jdk.java.net/22/)
+and uses [Apache Maven](https://maven.apache.org/).
+
+
+The original Gaia data (see below) is too big for `ImageIO` (the implementation hits the 2G limit),
+so I have reduced it to 36000x18000 pixels. Download the file
+
+	https://www.hedenus.de/astro/data/Gaia_36k.bmp
+	
+and store it as 
+
+	de.hedenus.astro/.cache/Gaia_36k.bmp
+
+
+Under Windows run
+
+	generate_starmap.bat
+
+The result is found in the `target` folder.	Two files are generated:
+
+- the map as PNG
+- a CSV table of the stars with proper names 
+
+
+
+## Third Party Sources
+
+### Milky Way Image
 
 *Gaia*'s all-sky view displayed in an equirectangular projection:
 
 	https://sci.esa.int/web/gaia/-/60196-gaia-s-sky-in-colour-equirectangular-projection
 
-## Stars
+### Star Data
 
 *Bright Star Catalogue, 5th Revised Ed* aka *Yale Catalogue of Bright Stars*:
 
@@ -17,7 +49,7 @@ German star names are taken from *Wikipedia*:
 	https://de.wikipedia.org/wiki/Liste_von_Sternennamen
 
 
-## Constellations 
+### Constellations
 
 Boundaries published by *International Astronomical Union*:
 
@@ -36,8 +68,7 @@ Lines are taken from *Stellarium*:
 	https://github.com/Stellarium/stellarium/blob/master/stars/default/cross-id.dat 
 
 
-
-# License
+## License
 
 I assume, this license covers all licenses:
 
