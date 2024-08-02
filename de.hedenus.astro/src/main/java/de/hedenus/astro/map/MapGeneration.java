@@ -2,7 +2,6 @@ package de.hedenus.astro.map;
 
 import java.awt.BasicStroke;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,7 +39,10 @@ public class MapGeneration
 	{
 		long t0 = System.currentTimeMillis();
 
-		new MapGeneration(Settings.defaultSettings(36000, true)).draw().save();
+		Settings settings = Settings.defaultSettings(36000, true, true);
+		//Settings settings = Settings.defaultSettings(10000, false, false);
+
+		new MapGeneration(settings).draw().save();
 
 		Log.info("Done in " + ((System.currentTimeMillis() - t0) / 1000.0f) + "s");
 	}
@@ -73,8 +75,14 @@ public class MapGeneration
 
 	public MapGeneration draw()
 	{
-		drawBackgroundMilkyWay();
-		//drawBackground();
+		if (settings.drawMilkyWay)
+		{
+			drawBackgroundMilkyWay();
+		}
+		else
+		{
+			drawBackground();
+		}
 
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -197,40 +205,48 @@ public class MapGeneration
 		}
 
 		//// labels
-
-		g2d.setFont(new Font(settings.rasterLabelFontName, Font.BOLD, settings.rasterLabelFontSize));
-		FontMetrics fontMetrics = g2d.getFontMetrics();
+		Font font = new Font(settings.rasterLabelFontName, Font.BOLD, settings.rasterLabelFontSize);
+		g2d.setFont(font);
+		FontRenderContext frc = g2d.getFontRenderContext();
+		int rasterLabelGap = (int) new TextLayout("|", font, frc).getBounds().getWidth();
 
 		// ra
+		{
+			String ra = "\u2648";
+			Rectangle bounds = new TextLayout(ra, font, frc).getBounds().getBounds();
+			int x = (settings.size.width / 2) + rasterLabelGap;
+			int y = (settings.size.height / 2) - bounds.y + rasterLabelGap;
+			g2d.drawString(ra, x, y);
+		}
 		for (int i = d; i < 180; i += d)
 		{
 			String ra = (24 - (i * 24 / 360)) + "h";
-			Rectangle bounds = fontMetrics.getStringBounds(ra, g2d).getBounds();
-
-			int x = (settings.size.width / 2) + (i * settings.size.width / 360) + settings.rasterLabelGap;
-			int y = (settings.size.height / 2) - bounds.y;
+			Rectangle bounds = new TextLayout(ra, font, frc).getBounds().getBounds();
+			int x = (settings.size.width / 2) + (i * settings.size.width / 360) + rasterLabelGap;
+			int y = (settings.size.height / 2) - bounds.y + rasterLabelGap;
 			g2d.drawString(ra, x, y);
 		}
 		for (int i = d; i < 180; i += d)
 		{
 			String ra = (i * 24 / 360) + "h";
-			Rectangle bounds = fontMetrics.getStringBounds(ra, g2d).getBounds();
-
-			int x = (settings.size.width / 2) - (i * settings.size.width / 360) - bounds.width
-					- settings.rasterLabelGap;
-			int y = (settings.size.height / 2) - bounds.y;
+			Rectangle bounds = new TextLayout(ra, font, frc).getBounds().getBounds();
+			int x = (settings.size.width / 2) - (i * settings.size.width / 360) + rasterLabelGap;
+			int y = (settings.size.height / 2) - bounds.y + rasterLabelGap;
 			g2d.drawString(ra, x, y);
 		}
 
 		// dec
 		for (int i = -90 + d; i < 90; i += d)
 		{
-			String dec = i == 0 ? "\u03b3" : i + "°";
-			//Rectangle bounds = fontMetrics.getStringBounds(dec, g2d).getBounds();
-			int x = (settings.size.width / 2) + settings.rasterLabelGap;
-			int y = mapProjection.project(new SphericalCoordinates(new DecimalDegree(0), new DecimalDegree(i))).y
-					- settings.rasterLabelGap;
-			g2d.drawString(dec, x, y);
+			if (i != 0)
+			{
+				String dec = (i > 0 ? "+" : "") + i + "°";
+				Rectangle bounds = new TextLayout(dec, font, frc).getBounds().getBounds();
+				int x = (settings.size.width / 2) + rasterLabelGap;
+				int y = mapProjection.project(new SphericalCoordinates(new DecimalDegree(0), new DecimalDegree(i))).y
+						- bounds.y + rasterLabelGap;
+				g2d.drawString(dec, x, y);
+			}
 		}
 
 		return this;
@@ -505,7 +521,7 @@ public class MapGeneration
 		g2d.setColor(settings.starLabelColor);
 
 		List<Labels.LayoutSolution> solutions = new ArrayList<>();
-		for (int i = 1; i <= 100; i++)
+		for (int i = 1; i <= 200; i++)
 		{
 			Labels.LayoutSolution solution = labels.layout();
 			solutions.add(solution);

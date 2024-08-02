@@ -12,6 +12,7 @@ public final class Settings
 	public Dimension size;
 	public int margin;
 
+	public boolean drawMilkyWay;
 	public File milkyWay;
 
 	public float starMaxMagnitude;
@@ -29,7 +30,6 @@ public final class Settings
 	public float rasterLineWidth;
 	public String rasterLabelFontName;
 	public int rasterLabelFontSize;
-	public int rasterLabelGap;
 
 	public Color eclipticColor;
 	public float eclipticLineWidth;
@@ -58,10 +58,11 @@ public final class Settings
 		this.supersampling = supersampling;
 	}
 
-	public static Settings defaultSettings(final int dim, final boolean supersampling)
+	public static Settings defaultSettings(final int dim, final boolean drawMilkyWay, final boolean supersampling)
 	{
 		Settings settings = new Settings(dim, supersampling);
 
+		settings.drawMilkyWay = drawMilkyWay;
 		settings.milkyWay = new File(".cache/Gaia_36k.bmp");
 
 		settings.size = new Dimension(dim, dim / 2);
@@ -76,7 +77,6 @@ public final class Settings
 		settings.rasterLineWidth = Math.round(0.0002f * dim);
 		settings.rasterLabelFontName = Font.SERIF;
 		settings.rasterLabelFontSize = Math.round(0.0065f * dim);
-		settings.rasterLabelGap = Math.round(0.0005f * dim);
 		settings.constellationLineWidth = Math.round(0.00025f * dim);
 		settings.constellationBoundariesLineWidth = settings.rasterLineWidth;
 		settings.eclipticLineWidth = Math.round(0.0003f * dim);
@@ -104,7 +104,7 @@ public final class Settings
 
 	public static Settings lightSettings(final int dim, final boolean supersampling)
 	{
-		Settings settings = defaultSettings(dim, supersampling);
+		Settings settings = defaultSettings(dim, false, supersampling);
 
 		settings.frameColor = Color.darkGray;
 		settings.backgroundColor = Color.white;

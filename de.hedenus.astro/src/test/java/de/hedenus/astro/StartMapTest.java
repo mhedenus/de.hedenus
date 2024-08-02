@@ -25,7 +25,8 @@ public class StartMapTest
 	@Test
 	public void test4()
 	{
-		System.out.println(new StarCatalogue().stars(Settings.defaultSettings(0, false).starMaxMagnitude).count());
+		System.out
+				.println(new StarCatalogue().stars(Settings.defaultSettings(0, false, false).starMaxMagnitude).count());
 	}
 
 	@Test
