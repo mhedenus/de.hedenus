@@ -40,7 +40,7 @@ public class MapGeneration
 		long t0 = System.currentTimeMillis();
 
 		Settings settings = Settings.defaultSettings(36000, true, true);
-		//Settings settings = Settings.defaultSettings(10000, false, false);
+		//Settings settings = Settings.defaultSettings(16000, false, false);
 
 		new MapGeneration(settings).draw().save();
 
@@ -70,7 +70,7 @@ public class MapGeneration
 				() -> new ConstellationLines().compute(starCatalogue));
 		this.constellationCenters = new ConstellationCenters();
 
-		this.labels = new Labels(settings);
+		this.labels = new Labels();
 	}
 
 	public MapGeneration draw()
@@ -520,22 +520,29 @@ public class MapGeneration
 	{
 		g2d.setColor(settings.starLabelColor);
 
+		Labels.LayoutSolution layoutSolution = FileCache.instance().get("labelsLayoutSolution_" + settings.dim,
+				() -> computeLabelsLayout());
+		labels.draw(g2d, layoutSolution);
+
+		return this;
+	}
+
+	private Labels.LayoutSolution computeLabelsLayout()
+	{
 		List<Labels.LayoutSolution> solutions = new ArrayList<>();
-		for (int i = 1; i <= 200; i++)
+		for (int i = 1; i <= 1000; i++)
 		{
-			Labels.LayoutSolution solution = labels.layout();
+			Labels.LayoutSolution solution = labels.layout(settings.starLabelLayoutPasses);
 			solutions.add(solution);
-			Log.info("Solution " + i + ": " + solution.overlaps);
+			Log.status("Solution " + i + ": " + solution.overlaps);
 		}
 
 		solutions.sort((l1, l2) -> l1.overlaps - l2.overlaps);
 
 		Labels.LayoutSolution best = solutions.get(0);
+		Log.info("");
 		Log.info("Using solution: " + best.overlaps);
-
-		labels.draw(g2d, best);
-
-		return this;
+		return best;
 	}
 
 	public MapGeneration save()

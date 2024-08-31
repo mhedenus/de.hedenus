@@ -12,13 +12,7 @@ public class Labels implements Serializable, Iterable<Label>
 {
 	private static final long serialVersionUID = -7076878111448624945L;
 
-	private final Settings settings;
 	private final List<Label> labels = new ArrayList<>();
-
-	public Labels(final Settings settings)
-	{
-		this.settings = settings;
-	}
 
 	@Override
 	public Iterator<Label> iterator()
@@ -38,7 +32,7 @@ public class Labels implements Serializable, Iterable<Label>
 		public List<Rectangle> layout;
 	}
 
-	public LayoutSolution layout()
+	public LayoutSolution layout(final int starLabelLayoutPasses)
 	{
 		LayoutSolution solution = new LayoutSolution();
 
@@ -54,7 +48,7 @@ public class Labels implements Serializable, Iterable<Label>
 		}
 
 		int overlaps = 0;
-		for (int pass = 1; pass <= settings.starLabelLayoutPasses; pass++)
+		for (int pass = 1; pass <= starLabelLayoutPasses; pass++)
 		{
 			overlaps = 0;
 			for (int i = 0; i < len; i++)
